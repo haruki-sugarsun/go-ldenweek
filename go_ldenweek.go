@@ -123,6 +123,8 @@ func main() {
 	end := (func() time.Time {
 		var cursor = start // day to test if it is a vacation-ish.
 
+		// TODO: this only output the possible Go-ldenweek including Showa day.
+		// Fix to detect the longest possible. e.g. for 2020.
 	sweepings:
 		for cursor.Year() == target_year {
 			for i := 1; i <= allowed_gap+1; i++ {
