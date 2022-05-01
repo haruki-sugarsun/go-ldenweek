@@ -39,14 +39,6 @@ func sundayBefore(day time.Time) (time.Time, int) {
 	panic(fmt.Sprintf("%s has no Weekday.", day))
 }
 
-func previousDay(day time.Time) time.Time {
-	return day.AddDate(0, 0, -1)
-}
-
-func nextDay(day time.Time) time.Time {
-	return day.AddDate(0, 0, -1)
-}
-
 func isHolidayOrWeekend(day time.Time, holiday_instances []time.Time) bool {
 	if cal.IsWeekend(day) {
 		return true
@@ -85,12 +77,7 @@ func main() {
 
 	// Core calculation.
 	fmt.Printf("Calculating the Go-ldenweek of %s.\n", target_year)
-
-	integers := funk.Map([]int{1, 2, 3}, func(i int) int { return i + 1 })
-	fmt.Printf("integers = %s\n", integers)
-
-	tmp_holiday_instances := funk.Map(go_ldenweek_ingredients[:], func(x *cal.Holiday) time.Time { _, o := x.Calc(target_year); return o }).([]time.Time)
-	holiday_instances := tmp_holiday_instances
+	holiday_instances := funk.Map(go_ldenweek_ingredients[:], func(x *cal.Holiday) time.Time { _, o := x.Calc(target_year); return o }).([]time.Time)
 
 	for _, ex := range go_ldenweek_ingredients {
 		var actual, observed = ex.Calc(target_year)
@@ -111,7 +98,7 @@ func main() {
 		if diff <= allowed_gap+1 {
 			// Diff 1 means the days are continuos, so days allowed_gap+1 away can be connected.
 			// this weekend can be a part of Go-ldenweek.
-			return previousDay(sunday)
+			return sunday.AddDate(0, 0, -1)
 		} else {
 			return temp_start
 		}
