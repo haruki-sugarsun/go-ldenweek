@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	"os"
+	"log"
 
 	"github.com/rickar/cal/v2"
 	"github.com/rickar/cal/v2/jp"
@@ -57,6 +58,7 @@ func main() {
 	// Flag interpretation and Setup.
     target_year_flag := flag.Int("year", -1, "Target year of the Christian Era.")
     allowed_gap_flag := flag.Int("gap", 1, "Maximum gap between holidays to make them continuos for Go-ldenweek.")
+    verbose_flag := flag.Bool("verbose", false, "Verbose debugging output if given.")
 	flag.Parse()
 
 	// Constants
@@ -76,19 +78,18 @@ func main() {
 	}
 
 	// Core calculation.
-	fmt.Printf("Calculating the Go-ldenweek of %s.\n", target_year)
-	holiday_instances := funk.Map(go_ldenweek_ingredients[:], func(x *cal.Holiday) time.Time { _, o := x.Calc(target_year); return o }).([]time.Time)
-
-	for _, ex := range go_ldenweek_ingredients {
-		var actual, observed = ex.Calc(target_year)
-
-		fmt.Printf("     ----- %s \n", ex)
-		fmt.Printf("actual: %s\n", actual)
-		fmt.Printf("observed: %s\n", observed)
-
-		fmt.Printf("observed.Weekday(): %s\n", observed.Weekday())
-
-	}
+	fmt.Printf("Calculating the Go-ldenweek of %d.\n", target_year)
+	holiday_instances := funk.Map(go_ldenweek_ingredients[:],
+		func(x *cal.Holiday) time.Time {
+			actual, observed := x.Calc(target_year)
+			if *verbose_flag {
+				log.Printf("     ----- %s \n", x)
+				log.Printf("actual: %s\n", actual)
+				log.Printf("observed: %s\n", observed)
+				log.Printf("observed.Weekday(): %s\n", observed.Weekday())
+			}
+			return observed
+		}).([]time.Time)
 
 	// Determine the "start" of Go-ldenweek.
 	// Have the obserbed ShowaDay as a temporary start, and include the nearest weekend just before.
@@ -103,7 +104,9 @@ func main() {
 			return temp_start
 		}
 	})()
-	fmt.Printf("start is %s.", start)
+	if *verbose_flag {
+		log.Printf("start is %s.", start)
+	}
 
 	// Sweep forward to check "connected" holidays and weekends.
 	// TODO: Implement more intuitive approach? e.g. merging the vacation periods.
@@ -116,9 +119,9 @@ func main() {
 		for cursor.Year() == target_year {
 			for i := 1; i <= allowed_gap+1; i++ {
 				day_to_check := cursor.AddDate(0, 0, i)
-				fmt.Printf("   --- checking %s\n", day_to_check)
+				if *verbose_flag { log.Printf("   --- checking %s\n", day_to_check) }
 				if isHolidayOrWeekend(day_to_check, holiday_instances) {
-					fmt.Printf("   --- vacation-ish! %s\n", day_to_check)
+					if *verbose_flag { log.Printf("   --- vacation-ish! %s\n", day_to_check) }
 
 					cursor = day_to_check
 					continue sweepings
