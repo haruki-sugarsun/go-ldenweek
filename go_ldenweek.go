@@ -54,6 +54,10 @@ func isHolidayOrWeekend(day time.Time, holiday_instances []time.Time) bool {
 	return false
 }
 
+func formatDay(day time.Time) string {
+	return day.Format("2006/1/2")
+}
+
 func main() {
 	// Flag interpretation and Setup.
     target_year_flag := flag.Int("year", -1, "Target year of the Christian Era.")
@@ -133,5 +137,5 @@ func main() {
 		return cursor
 	})()
 
-	fmt.Printf("Go-ldenweek is %s ~ %s\n", start, end)
+	fmt.Printf("Go-ldenweek is %s ~ %s\n", formatDay(start), formatDay(end))
 }
