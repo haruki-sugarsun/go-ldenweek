@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"time"
+	"os"
 
 	"github.com/rickar/cal/v2"
 	"github.com/rickar/cal/v2/jp"
@@ -60,7 +62,10 @@ func isHolidayOrWeekend(day time.Time, holiday_instances []time.Time) bool {
 }
 
 func main() {
-	fmt.Println("Go-ldenweek!")
+	// Flag interpretation and Setup.
+    target_year_flag := flag.Int("year", -1, "Target year of the Christian Era.")
+    allowed_gap_flag := flag.Int("gap", 1, "Maximum gap between holidays to make them continuos for Go-ldenweek.")
+	flag.Parse()
 
 	// Constants
 	// TODO: do we have better way to declare a constant?
@@ -70,17 +75,25 @@ func main() {
 		jp.GreeneryDay,
 		jp.ChildrensDay,
 	}
-	current_year := 2022
-	allowed_gap := 1
+	var target_year = *target_year_flag
+	if target_year <= 0 { target_year = time.Now().Year() }
+	allowed_gap := *allowed_gap_flag
+	if allowed_gap < 0 {
+		fmt.Println("allowed_gap cannot be negative.")
+        os.Exit(1)
+	}
+
+	// Core calculation.
+	fmt.Printf("Calculating the Go-ldenweek of %s.\n", target_year)
 
 	integers := funk.Map([]int{1, 2, 3}, func(i int) int { return i + 1 })
 	fmt.Printf("integers = %s\n", integers)
 
-	tmp_holiday_instances := funk.Map(go_ldenweek_ingredients[:], func(x *cal.Holiday) time.Time { _, o := x.Calc(current_year); return o }).([]time.Time)
+	tmp_holiday_instances := funk.Map(go_ldenweek_ingredients[:], func(x *cal.Holiday) time.Time { _, o := x.Calc(target_year); return o }).([]time.Time)
 	holiday_instances := tmp_holiday_instances
 
 	for _, ex := range go_ldenweek_ingredients {
-		var actual, observed = ex.Calc(current_year)
+		var actual, observed = ex.Calc(target_year)
 
 		fmt.Printf("     ----- %s \n", ex)
 		fmt.Printf("actual: %s\n", actual)
@@ -93,7 +106,7 @@ func main() {
 	// Determine the "start" of Go-ldenweek.
 	// Have the obserbed ShowaDay as a temporary start, and include the nearest weekend just before.
 	start := (func() time.Time {
-		_, temp_start := jp.ShowaDay.Calc(current_year) // TODO: Reconsider var/const naming.
+		_, temp_start := jp.ShowaDay.Calc(target_year) // TODO: Reconsider var/const naming.
 		sunday, diff := sundayBefore(temp_start)
 		if diff <= allowed_gap+1 {
 			// Diff 1 means the days are continuos, so days allowed_gap+1 away can be connected.
@@ -111,7 +124,7 @@ func main() {
 		var cursor = start // day to test if it is a vacation-ish.
 
 	sweepings:
-		for cursor.Year() == current_year {
+		for cursor.Year() == target_year {
 			for i := 1; i <= allowed_gap+1; i++ {
 				day_to_check := cursor.AddDate(0, 0, i)
 				fmt.Printf("   --- checking %s\n", day_to_check)
@@ -128,5 +141,5 @@ func main() {
 		return cursor
 	})()
 
-	fmt.Printf("Go-ldenweek is %s ~ %s", start, end)
+	fmt.Printf("Go-ldenweek is %s ~ %s\n", start, end)
 }
