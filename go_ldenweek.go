@@ -87,7 +87,7 @@ func main() {
 		func(x *cal.Holiday) time.Time {
 			actual, observed := x.Calc(target_year)
 			if *verbose_flag {
-				log.Printf("     ----- %s \n", x)
+				log.Printf("     ----- %#v \n", x)
 				log.Printf("actual: %s\n", actual)
 				log.Printf("observed: %s\n", observed)
 				log.Printf("observed.Weekday(): %s\n", observed.Weekday())
