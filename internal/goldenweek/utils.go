@@ -1,7 +1,6 @@
 package goldenweek
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/rickar/cal/v2"
