@@ -48,6 +48,8 @@ func main() {
 			return observed
 		}).([]time.Time)
 
+	// Determine the "start" of Go-ldenweek.
+	// Have the obserbed ShowaDay as a temporary start, and include the nearest weekend just before.
 	start := (func() time.Time {
 		_, tempStart := jp.ShowaDay.Calc(targetYear)
 		sunday, diff := goldenweek.SundayBefore(tempStart)
@@ -61,9 +63,13 @@ func main() {
 		log.Printf("start is %s.", start)
 	}
 
+	// Sweep forward to check "connected" holidays and weekends.
+	// TODO: Implement more intuitive approach? e.g. merging the vacation periods.
 	end := (func() time.Time {
 		var cursor = start // day to test if it is a vacation-ish.
 
+		// TODO: this only output the possible Go-ldenweek including Showa day.
+		// Fix to detect the longest possible. e.g. for 2020.
 	sweepings:
 		for cursor.Year() == targetYear {
 			for i := 1; i <= allowedGap+1; i++ {
