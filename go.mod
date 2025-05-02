@@ -1,4 +1,4 @@
-module example/go_ldenweek
+module github.com/haruki-sugarsun/go-ldenweek
 
 go 1.18
 
